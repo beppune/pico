@@ -22,11 +22,14 @@ void enableRawMode() {
 	atexit(disableRawMode);
 
 	struct termios raw = orig_term;
-	raw.c_lflag &= ~(ECHO | ICANON | ISIG);
+	raw.c_lflag &= ~(ECHO | ICANON | ISIG | IEXTEN);
 
-	raw.c_iflag &= ~(IXON);
+	raw.c_iflag &= ~(BRKINT | IXON | ICRNL | IGNBRK | IGNCR | INLCR | INPCK | ISTRIP | PARMRK);
 
 	raw.c_oflag &= ~(OPOST);
+
+	raw.c_cc[VMIN] = 1;
+	raw.c_cc[VTIME] = 0;
 
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 }
@@ -42,6 +45,11 @@ void input(char r) {
 			exit(0);
 			break;
 	}
+
+	//UP		0x1b[A
+	//DOWN		0x1b[B
+	//RIGHT		0x1b[C
+	//LEFT		0x1b[D
 
 	if (iscntrl(r)) {
 		printf("%d, 0x%x\r\n", r, r);
