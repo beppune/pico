@@ -22,24 +22,43 @@ void enableRawMode() {
 	atexit(disableRawMode);
 
 	struct termios raw = orig_term;
-	raw.c_lflag &= ~(ECHO | ICANON);
-	
+	raw.c_lflag &= ~(ECHO | ICANON | ISIG);
+
 	raw.c_iflag &= ~(IXON);
-	
+
 	raw.c_oflag &= ~(OPOST);
 
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+}
+
+void input(char r) {
+	switch(r) {
+		case 0x11:
+			printf("pico: Bye, Bye!\r\n");
+			exit(0);
+			break;
+		case 0x3:
+			printf("pico: Bye, Bye! (saving buffer)\r\n");
+			exit(0);
+			break;
+	}
+
+	if (iscntrl(r)) {
+		printf("%d, 0x%x\r\n", r, r);
+	} else {
+		printf("%d, '%c', 0x%x\r\n", r, r, r);
+	}
 }
 
 void init() {
 	struct stat s;
 	if( fstat(STDIN_FILENO, &s) == -1) die("init");
 
-	if(  S_ISFIFO(s.st_mode) ) die("stdin_pipe");
+	if( S_ISFIFO(s.st_mode) ) die("stdin_pipe");
 
 	// Clear screen
 	write(STDIN_FILENO, "\x1b[2J", 4);
-	
+
 	// Move Cursor upper-left
 	write(STDIN_FILENO, "\x1b[H", 3);
 }
@@ -54,12 +73,9 @@ int main() {
 
 	char c;
 	while (read(STDIN_FILENO, &c, 1) == 1 ) {
-		if (iscntrl(c)) {
-			printf("%d, 0x%x\r\n", c, c);
-		} else {
-			printf("%d, '%c', 0x%x\r\n", c, c, c);
-		}
+		input(c);
 	}
 
+	printf("pico: bye, bye!\r\n");
 	return 0;
 }
