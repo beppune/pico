@@ -59,10 +59,7 @@ void input(char r) {
 }
 
 void init() {
-	struct stat s;
-	if( fstat(STDIN_FILENO, &s) == -1) die("init");
-
-	if( S_ISFIFO(s.st_mode) ) die("stdin_pipe");
+	if( !isatty(STDIN_FILENO) ) die("not a tty");
 
 	// Clear screen
 	write(STDIN_FILENO, "\x1b[2J", 4);
