@@ -62,6 +62,16 @@ void input(char r) {
 			printf("pico: Bye, Bye! (saving buffer)\r\n");
 			exit(0);
 			break;
+		case 0x1b:
+
+			if( read(STDIN_FILENO, readbuf, 5) == -1 ) {
+				die("read");
+			}
+
+			if( readbuf[1] == 'A' )
+				printf("Arrow Up");
+
+			break;
 	}
 
 	//UP		0x1b[A
