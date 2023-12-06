@@ -5,8 +5,24 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <signal.h>
 
 struct termios orig_term;
+
+
+#define ON_WINCH 0
+struct sigaction actions[1];
+
+void on_winch() {
+	printf("Wind ow change\r\n");
+}
+
+struct editor_state {
+	unsigned int width;
+	unsigned int height;
+} ES;
 
 void die(const char *topic) {
 	perror(topic);
@@ -33,6 +49,8 @@ void enableRawMode() {
 
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 }
+
+char readbuf[5];
 
 void input(char r) {
 	switch(r) {
@@ -61,11 +79,29 @@ void input(char r) {
 void init() {
 	if( !isatty(STDIN_FILENO) ) die("not a tty");
 
+	// Set input buffer to zeroes
+	memset(readbuf, 0, 5);
+
 	// Clear screen
 	write(STDIN_FILENO, "\x1b[2J", 4);
 
 	// Move Cursor upper-left
 	write(STDIN_FILENO, "\x1b[H", 3);
+
+	// Get terminal size
+	struct winsize ws;
+	if( ioctl(STDIN_FILENO, TIOCGWINSZ, &ws) == -1 )
+		die("ioctl");
+
+	ES.width = ws.ws_col;
+	ES.height = ws.ws_row;
+	printf("tty: %s, pid: %d, w: %d, h: %d\r\n", ttyname(STDIN_FILENO), getpid(),  ES.width, ES.height);
+
+	// Setup gsignal actions
+	actions[ON_WINCH].sa_handler = on_winch;
+	sigfillset(&actions[ON_WINCH].sa_mask);
+	actions[ON_WINCH].sa_flags = SA_RESTART;
+	sigaction(SIGWINCH, &actions[ON_WINCH], NULL);
 }
 
 int main() {
