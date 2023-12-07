@@ -4,10 +4,12 @@
 #include <termios.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <errno.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <signal.h>
+
+#include "error.h"
+#include "input.h"
 
 struct termios orig_term;
 
@@ -23,11 +25,6 @@ struct editor_state {
 	unsigned int width;
 	unsigned int height;
 } ES;
-
-void die(const char *topic) {
-	perror(topic);
-	exit(1);
-}
 
 void disableRawMode() {
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_term);
@@ -61,16 +58,6 @@ void input(char r) {
 		case 0x3:
 			printf("pico: Bye, Bye! (saving buffer)\r\n");
 			exit(0);
-			break;
-		case 0x1b:
-
-			if( read(STDIN_FILENO, readbuf, 5) == -1 ) {
-				die("read");
-			}
-
-			if( readbuf[1] == 'A' )
-				printf("Arrow Up");
-
 			break;
 	}
 
