@@ -4,14 +4,19 @@ CFLAGS=-Wall -Wpedantic
 
 all: pico
 
-pico: pico.o error.o
-	$(CC) $? -o $@
+pico: pico.o input.o error.o
+	$(CC) $^ -o $@
 
-pico.o: pico.c
+pico.o: pico.c 
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-error.o: error.c error.h
+input.o: input.c
 	$(CC) $(CFLAGS) -c -o $@ $<
+
+error.o: error.c 
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+.PHONY: clean
 
 clean:
 	rm -f pico *.o
@@ -19,5 +24,3 @@ clean:
 r: pico
 	./pico
 
-e:
-	${EDITOR} pico.c

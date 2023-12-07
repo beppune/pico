@@ -24,6 +24,8 @@ void on_winch() {
 struct editor_state {
 	unsigned int width;
 	unsigned int height;
+	unsigned int cx;
+	unsigned int cy;
 } ES;
 
 void disableRawMode() {
@@ -49,7 +51,14 @@ void enableRawMode() {
 
 char readbuf[5];
 
-void input(char r) {
+void move(struct editor_state *es) {
+	char b[12];
+	memset(b, 0, 12);
+	int p = sprintf(b, "\x1b[%d;%dH", es->cy, es->cx);
+	write(STDIN_FILENO, b, p);
+}
+
+void input(int r) {
 	switch(r) {
 		case 0x11:
 			printf("pico: Bye, Bye!\r\n");
@@ -59,17 +68,14 @@ void input(char r) {
 			printf("pico: Bye, Bye! (saving buffer)\r\n");
 			exit(0);
 			break;
-	}
 
-	//UP		0x1b[A
-	//DOWN		0x1b[B
-	//RIGHT		0x1b[C
-	//LEFT		0x1b[D
-
-	if (iscntrl(r)) {
-		printf("%d, 0x%x\r\n", r, r);
-	} else {
-		printf("%d, '%c', 0x%x\r\n", r, r, r);
+		case ARROW_UP:
+		case ARROW_DOWN:
+		case ARROW_RIGHT:
+		case ARROW_LEFT:
+			break;
+		default:
+			printf("%d, '%c', 0x%x\r\n", r, r, r);
 	}
 }
 
@@ -94,7 +100,11 @@ void init() {
 	ES.height = ws.ws_row;
 	printf("tty: %s, pid: %d, w: %d, h: %d\r\n", ttyname(STDIN_FILENO), getpid(),  ES.width, ES.height);
 
-	// Setup gsignal actions
+	// Set initial cursor position
+	ES.cy = 1;
+	ES.cy = 1;
+
+	// Setup signal actions
 	actions[ON_WINCH].sa_handler = on_winch;
 	sigfillset(&actions[ON_WINCH].sa_mask);
 	actions[ON_WINCH].sa_flags = SA_RESTART;
@@ -109,10 +119,11 @@ int main() {
 
 	init();
 
-	char c;
-	while (read(STDIN_FILENO, &c, 1) == 1 ) {
+	int c;
+	do {
+		c = getfrom(STDIN_FILENO);
 		input(c);
-	}
+	} while(1);
 
 	printf("pico: bye, bye!\r\n");
 	return 0;

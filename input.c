@@ -1,4 +1,5 @@
 #include "input.h"
+#include "error.h"
 
 #include <unistd.h>
 #include <stdio.h>
@@ -32,7 +33,7 @@ int parse_escape(const char *b, size_t size) {
 /* Refer to enum KEY in input.h */
 int getfrom(int fd) {
 	char r;
-	size_t red = read(fd, read_buf, 1);
+	size_t red = read(fd, &r, 1);
 	if( -1 == red ) die("getfrom");
 
 	switch(r) {
