@@ -10,6 +10,8 @@
 
 #include "error.h"
 #include "input.h"
+#include "editor_state.h"
+#include "term.h"
 
 struct termios orig_term;
 
@@ -21,15 +23,11 @@ void on_winch() {
 	printf("Wind ow change\r\n");
 }
 
-struct editor_state {
-	unsigned int width;
-	unsigned int height;
-	unsigned int cx;
-	unsigned int cy;
-} ES;
+struct editor_state ES;
 
 void disableRawMode() {
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_term);
+	write(STDIN_FILENO, "\x1b[2J", 4);
 }
 
 void enableRawMode() {
@@ -51,13 +49,6 @@ void enableRawMode() {
 
 char readbuf[5];
 
-void move(struct editor_state *es) {
-	char b[12];
-	memset(b, 0, 12);
-	int p = sprintf(b, "\x1b[%d;%dH", es->cy, es->cx);
-	write(STDIN_FILENO, b, p);
-}
-
 void input(int r) {
 	switch(r) {
 		case 0x11:
@@ -73,6 +64,7 @@ void input(int r) {
 		case ARROW_DOWN:
 		case ARROW_RIGHT:
 		case ARROW_LEFT:
+			move(STDIN_FILENO, r, &ES);
 			break;
 		default:
 			printf("%d, '%c', 0x%x\r\n", r, r, r);
@@ -96,13 +88,16 @@ void init() {
 	if( ioctl(STDIN_FILENO, TIOCGWINSZ, &ws) == -1 )
 		die("ioctl");
 
-	ES.width = ws.ws_col;
-	ES.height = ws.ws_row;
-	printf("tty: %s, pid: %d, w: %d, h: %d\r\n", ttyname(STDIN_FILENO), getpid(),  ES.width, ES.height);
+	init_state(&ES, ws.ws_col, ws.ws_row);
 
 	// Set initial cursor position
-	ES.cy = 1;
-	ES.cy = 1;
+	ES.cy = 6;
+	ES.cx = 2;
+	move_to(STDIN_FILENO, ES.cx, ES.cy);
+
+	// Init status
+	set_status_true(&ES, "pico editor. tty: %s, pid: %d. CTRL-q (quit), CTRL-c (save and quit)", ttyname(STDIN_FILENO), getpid(),  ES.width, ES.height);
+	update_status(STDIN_FILENO, &ES);
 
 	// Setup signal actions
 	actions[ON_WINCH].sa_handler = on_winch;
