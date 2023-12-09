@@ -30,7 +30,7 @@ void move(int fd, int dir, struct editor_state *es) {
 			es->cy -= 1;
 			break;
 		case ARROW_DOWN:
-			if( es->cy == es->height ) return;
+			if( es->cy == es->height - 1 ) return;
 			b[2] = 'B';
 			es->cy += 1;
 			break;

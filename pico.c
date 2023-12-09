@@ -27,7 +27,7 @@ struct editor_state ES;
 
 void disableRawMode() {
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_term);
-	write(STDIN_FILENO, "\x1b[2J", 4);
+	write(STDIN_FILENO, "\x1b[H\x1b[2J", 7);
 }
 
 void enableRawMode() {
@@ -51,12 +51,10 @@ char readbuf[5];
 
 void input(int r) {
 	switch(r) {
-		case 0x11:
-			printf("pico: Bye, Bye!\r\n");
+		case 0x11: //Quit without save
 			exit(0);
 			break;
-		case 0x3:
-			printf("pico: Bye, Bye! (saving buffer)\r\n");
+		case 0x3: //Save and quit
 			exit(0);
 			break;
 
@@ -96,7 +94,7 @@ void init() {
 	move_to(STDIN_FILENO, ES.cx, ES.cy);
 
 	// Init status
-	set_status_true(&ES, "pico editor. tty: %s, pid: %d. CTRL-q (quit), CTRL-c (save and quit)", ttyname(STDIN_FILENO), getpid(),  ES.width, ES.height);
+	set_status_true(&ES, "pico editor. tty: %s, pid: %d. CTRL-q (quit), CTRL-c (save and quit)", ttyname(STDIN_FILENO), getpid());
 	update_status(STDIN_FILENO, &ES);
 
 	// Setup signal actions
