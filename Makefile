@@ -1,6 +1,6 @@
 
 CC=gcc
-CFLAGS=-Wall -Wpedantic
+CFLAGS=-g -Wall -Wpedantic
 
 all: pico
 

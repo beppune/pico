@@ -7,6 +7,7 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <signal.h>
+#include <ctype.h>
 
 #include "error.h"
 #include "input.h"
@@ -51,10 +52,10 @@ char readbuf[5];
 
 void input(int r) {
 	switch(r) {
-		case 0x11: //Quit without save
+		case 0x11: // CTRL-q. Quit without save
 			exit(0);
 			break;
-		case 0x3: //Save and quit
+		case 0x3: //CTRL-c. Save and quit
 			exit(0);
 			break;
 
@@ -64,8 +65,24 @@ void input(int r) {
 		case ARROW_LEFT:
 			move(STDIN_FILENO, r, &ES);
 			break;
-		default:
-			printf("%d, '%c', 0x%x\r\n", r, r, r);
+		case PAGE_UP:
+			printf("PAGE_UP\r\n");
+			break;
+		case PAGE_DOWN:
+			printf("PAGE_DOWN\r\n");
+			break;
+		case INSERT:
+			printf("INSERT\r\n");
+			break;
+		case CANC:
+			printf("CANC\r\n");
+			break;
+		case HOME:
+			printf("HOME\r\n");
+			break;
+		case END:
+			printf("END\r\n");
+			break;
 	}
 }
 
@@ -115,9 +132,11 @@ int main() {
 	int c;
 	do {
 		c = getfrom(STDIN_FILENO);
+		if( iscntrl(c) ) {
+			printf("0x%x\r\n", c);
+		}
 		input(c);
 	} while(1);
 
-	printf("pico: bye, bye!\r\n");
 	return 0;
 }

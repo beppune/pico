@@ -3,29 +3,27 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <string.h>
 
 #define MAX_READBUF 5
 char read_buf[MAX_READBUF];
 
-int parse_escape(const char *b, size_t size) {
+int parse_escape() {
+	const char * b = read_buf;
 	if( *b != '[') die("not an escape sequence");
-	b++;
-	while(b != b + size) {
+	if( strncmp(b, "[A", 2) == 0 ) return ARROW_UP;
+	if( strncmp(b, "[B", 2) == 0 ) return ARROW_DOWN;
+	if( strncmp(b, "[C", 2) == 0 ) return ARROW_RIGHT;
+	if( strncmp(b, "[D", 2) == 0 ) return ARROW_LEFT;
+	if( strncmp(b, "[5~", 3) == 0 ) return PAGE_UP;
+	if( strncmp(b, "[6~", 3) == 0 ) return PAGE_DOWN;
+	if( strncmp(b, "[2~", 3) == 0 ) return INSERT;
+	if( strncmp(b, "[3~", 3) == 0 ) return CANC;
+	if( strncmp(b, "[H", 2) == 0 ) return HOME;
+	if( strncmp(b, "[F", 2) == 0 ) return END;
 
-		// Test for arrow keys
-		switch( *b  ) {
-			case 'A':
-				return ARROW_UP;
-			case 'B':
-				return ARROW_DOWN;
-			case 'C':
-				return ARROW_RIGHT;
-			case 'D':
-				return ARROW_LEFT;
-		}
 
-		b++;
-	}
+	printf("%s\r\n", read_buf);
 
 	return 0;
 }
@@ -40,8 +38,10 @@ int getfrom(int fd) {
 		case 0x1b:
 			red = read(fd, read_buf, MAX_READBUF);
 			if( -1 == red ) die("getfrom");
-			return parse_escape(read_buf, MAX_READBUF);
-			break;
+			red = parse_escape();
+			if( red != 0 ) {
+				return red;
+			}
 		default:
 			return r;
 	}
