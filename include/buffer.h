@@ -1,17 +1,19 @@
+
 #ifndef BUFFER_H
 #define BUFFER_H
 
 #include <stddef.h>
 
-struct buffer{
-    char *b;
-    size_t len;
-}
+struct buffer {
+	char *ptr;
+	size_t len;
+};
 
-#define NEW_BUFFER { NULL, O }
+#define INIT_BUFFER { NULL, 0 }
 
-void buffer_append(struct buffer * bf, const char *str, size_t len);
+void append_buffer(struct buffer *bf, const char *str, size_t len);
 
-void buffer_free(struct buffer *bf) {
+void free_buffer(struct buffer *bf);
 
 #endif // BUFFER_H
+

@@ -1,25 +1,19 @@
 #include "buffer.h"
 
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
-void buffer_append(struct buffer * bf, const char *str, size_t len) {
-    if( bf == NULL ) return;
+void append_buffer(struct buffer *bf, const char *str, size_t len) {
+	bf->ptr = realloc(bf->ptr, sizeof(char) * (bf->len + len) );
 
-    bf->p = realloc(bf->p, sizeof(char) * len);
+	char *p = bf->ptr + bf->len;
+	memcpy(p, str, len);
 
-    char *p = bf->p + bf->len;
-
-    memcpy(p, str, len);
-
-    bf->len += len;
-
+	bf->len += len;
 }
 
-void buffer_free(struct buffer *bf) {
-    if( bf == NULL ) return;
-
-    free(bf->p);
-    bf->p = NULL;
-    bf->len = 0;
+void free_buffer(struct buffer *bf) {
+	free(bf->ptr);
+	bf->len = 0;
+	bf->ptr = NULL;
 }
