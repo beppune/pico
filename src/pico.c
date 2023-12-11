@@ -132,9 +132,9 @@ int main() {
 	int c;
 	do {
 		c = getfrom(STDIN_FILENO);
-		if( iscntrl(c) ) {
+		/*if( iscntrl(c) ) {
 			printf("0x%x\r\n", c);
-		}
+		}*/
 		input(c);
 	} while(1);
 

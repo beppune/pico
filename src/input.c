@@ -19,11 +19,13 @@ int parse_escape() {
 	if( strncmp(b, "[6~", 3) == 0 ) return PAGE_DOWN;
 	if( strncmp(b, "[2~", 3) == 0 ) return INSERT;
 	if( strncmp(b, "[3~", 3) == 0 ) return CANC;
+	if( strncmp(b, "[1~", 3) == 0 ) return HOME;
+	if( strncmp(b, "[4~", 3) == 0 ) return END;
 	if( strncmp(b, "[H", 2) == 0 ) return HOME;
 	if( strncmp(b, "[F", 2) == 0 ) return END;
 
 
-	printf("%s\r\n", read_buf);
+	printf("ESCAPE: %s\r\n", read_buf);
 
 	return 0;
 }
