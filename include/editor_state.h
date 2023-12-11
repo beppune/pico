@@ -9,6 +9,7 @@ struct editor_state {
 	unsigned int cx;
 	unsigned int cy;
 	char *status;
+	int fd;
 };
 
 void init_state(struct editor_state *es, int w, int h);

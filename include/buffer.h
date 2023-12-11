@@ -9,7 +9,7 @@ struct buffer {
 	size_t len;
 };
 
-#define INIT_BUFFER { NULL, 0 }
+#define BUFFER_INIT { NULL, 0 }
 
 void append_buffer(struct buffer *bf, const char *str, size_t len);
 
