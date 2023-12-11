@@ -1,32 +1,30 @@
+SRC_DIR := src
+INC_DIR := include
+BIN_DIR := bin
 
-CC=gcc
-CFLAGS=-g -Wall -Wpedantic
+SRC := $(wildcard $(SRC_DIR)/*.c)
+OBJ := $(patsubst $(SRC_DIR)/%.c, $(BIN_DIR)/%.o, $(SRC))
+
+CPPFLAGS := -iquote $(INC_DIR) -MMD -MP
+CFLAGS := -g -Wall -Wpedantic 
 
 all: pico
 
-pico: pico.o term.o input.o error.o editor_state.o
+pico: $(OBJ) | $(BIN_DIR)
 	$(CC) $^ -o $@
 
-pico.o: pico.c 
-	$(CC) $(CFLAGS) -c -o $@ $<
+$(BIN_DIR)/%.o: $(SRC_DIR)/%.c | $(BIN_DIR)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-term.o: term.c 
-	$(CC) $(CFLAGS) -c -o $@ $<
+$(BIN_DIR):
+	mkdir -p $@
 
-input.o: input.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+.PHONY: clean all
 
-error.o: error.c 
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-editor_state.o: editor_state.c 
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-.PHONY: clean
+.PHONY: clean 
 
 clean:
-	rm -f pico *.o
+	rm -fr pico $(BIN_DIR)
 
-r: pico
-	./pico
+-include $(OBJ:.o=.d)
 
