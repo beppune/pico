@@ -15,7 +15,6 @@
 #include "input.h"
 #include "editor_state.h"
 #include "term.h"
-#include "buffer.h"
 
 struct termios orig_term;
 
@@ -28,7 +27,6 @@ void on_winch() {
 }
 
 struct editor_state ES;
-struct buffer content = BUFFER_INIT;
 
 void disableRawMode() {
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_term);
@@ -126,8 +124,6 @@ void init() {
 
 }
 
-void load_file(struct buffer *b);
-
 void update_screen();
 
 int main() {
@@ -137,10 +133,6 @@ int main() {
 	enableRawMode();
 
 	init();
-
-	load_file(&content);
-
-	update_screen();
 
 	int c;
 	do {
@@ -154,30 +146,7 @@ int main() {
 	return 0;
 }
 
-void load_file(struct buffer *b) {
-	struct stat sample;
-	stat("sample.txt", &sample);
 
-	content.len = sample.st_size;
-	content.ptr = realloc(content.ptr, content.len);
-
-	ES.fd = open("sample.txt", O_RDWR);
-	read(ES.fd, content.ptr, content.len);
-}
-
-void update_screen() {
-	char *a, *r = content.ptr;
-	while(*r!='\n') r++;
-	int row = 1;
-	while(row <= ES.height - 1) {
-		move_to(ES.fd, row, 1);
-		write(STDIN_FILENO, a, r-a);
-		r++;
-		a = r;
-		while(*r != '\n')r++;
-		row++;	
-	}
-}
 
 
 
