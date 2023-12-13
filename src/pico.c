@@ -41,6 +41,7 @@ void enableRawMode() {
 	raw.c_lflag &= ~(ECHO | ICANON | ISIG | IEXTEN);
 
 	raw.c_iflag &= ~(BRKINT | IXON | ICRNL | IGNBRK | IGNCR | INLCR | INPCK | ISTRIP | PARMRK);
+    raw.c_iflag |= INLCR;
 
 	raw.c_oflag &= ~(OPOST);
 
@@ -81,6 +82,9 @@ void input(int r) {
 			break;
 		case HOME:
 			printf("HOME\r\n");
+            ES.cy = 2;
+            ES.cx = 2;
+            move_to(STDIN_FILENO, ES.cx, ES.cy);
 			break;
 		case END:
 			printf("END\r\n");
@@ -108,8 +112,8 @@ void init() {
 	init_state(&ES, ws.ws_col, ws.ws_row);
 
 	// Set initial cursor position
-	ES.cy = 6;
-	ES.cx = 2;
+	ES.cy = 0;
+	ES.cx = 0;
 	move_to(STDIN_FILENO, ES.cx, ES.cy);
 
 	// Init status
@@ -134,6 +138,8 @@ int main() {
 
 	init();
 
+    update_screen();
+
 	int c;
 	do {
 		c = getfrom(STDIN_FILENO);
@@ -146,8 +152,18 @@ int main() {
 	return 0;
 }
 
+void update_screen() {
+    char *screen = "Lorem ipsum dolor sit amet, consectetur\n adipiscing elit."
+            "Vestibulum venenatis rutrum rutrum. In libero purus, convallis at porta sit amet,"
+            "consequat rhoncus tellus. Donec se\nd justo et odio posuere eleifend in et erat. In libero quam, pulvinar \na commodo id, porta eget lacus.";
 
+    ES.cx = 1; ES.cy = 1;
+    move_to(STDIN_FILENO, ES.cx, ES.cy);
+    write(STDIN_FILENO, screen, strlen(screen));
 
+    getcpos(STDIN_FILENO, &ES.cx, &ES.cy);
 
-
+    printf("x: %d, y: %d\r\n", ES.cx, ES.cy);
+}
+    
 

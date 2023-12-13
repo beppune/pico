@@ -7,6 +7,8 @@ void hide_cursor(int fd);
 
 void show_cursor(int fd);
 
+void getcpos(int fd, int *x, int *y); 
+
 void move_to(int fd, int x, int y);
 
 void move(int fd, int dir, struct editor_state *es);

@@ -21,28 +21,33 @@ void move_to(int fd, int x, int y) {
 	write(fd, b, strlen(b));
 }
 
+void getcpos(int fd, int *x, int *y) {
+    char b[20];
+    write(STDIN_FILENO, "\x1b[6n", 4);
+    read(STDIN_FILENO, b, 9);
+    sscanf(b, "\x1b[%d;%dR", y, x);
+}
+
 void move(int fd, int dir, struct editor_state *es) {
 	char b[] = { '\x1b', '[', 'A' };
 	switch(dir) {
 		case ARROW_UP:
-			if( es->cy == 1 ) return; 
+			if( es->cy == 1 )   es->cy -= 1;
 			b[2] = 'A';
-			es->cy -= 1;
 			break;
 		case ARROW_DOWN:
-			if( es->cy == es->height - 1 ) return;
-			b[2] = 'B';
-			es->cy += 1;
+			if( es->cy != es->height - 1 ) {
+                es->cy += 1;
+    			b[2] = 'B';
+            }
 			break;
 		case ARROW_RIGHT:
-			if( es->cx == es->width ) return;
+			if( es->cx == es->width ) es->cx += 1;
 			b[2] = 'C';
-			es->cx += 1;
 			break;
 		case ARROW_LEFT:
-			if( es->cx == 1 ) return;
+			if( es->cx == 1 ) es->cx -= 1;
 			b[2] = 'D';
-			es->cx -= 1;
 			break;
 		default:
 			return;
